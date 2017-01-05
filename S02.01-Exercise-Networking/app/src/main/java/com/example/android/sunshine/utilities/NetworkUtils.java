@@ -20,6 +20,8 @@ import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.Scanner;
+import android.net.*;
+import java.net.*;
 
 /**
  * These utilities will be used to communicate with the weather servers.
@@ -65,8 +67,20 @@ public final class NetworkUtils {
      * @return The URL to use to query the weather server.
      */
     public static URL buildUrl(String locationQuery) {
-        // TODO (1) Fix this method to return the URL used to query Open Weather Map's API
-        return null;
+        // TOD (1) Fix this method to return the URL used to query Open Weather Map's API
+		Uri uri = Uri.parse(DYNAMIC_WEATHER_URL).buildUpon()
+					.appendQueryParameter(QUERY_PARAM,locationQuery)
+					.appendQueryParameter(FORMAT_PARAM, format)
+					.appendQueryParameter(UNITS_PARAM, units)
+					.appendQueryParameter(DAYS_PARAM, ""+numDays)
+					.build();
+		URL url = null;
+		try {
+			url = new URL(uri.toString());
+		} catch (MalformedURLException e){
+			e.printStackTrace();
+		}
+        return url;
     }
 
     /**
