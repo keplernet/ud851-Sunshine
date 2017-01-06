@@ -158,7 +158,21 @@ public class MainActivity extends AppCompatActivity implements
                 .registerOnSharedPreferenceChangeListener(this);
     }
 
-
+        /*
+         * IMPORTANTE: He cambiado esto: he puesto primero la definicion de
+         * la static class (IMPORTANTE QUE SEA static!!!) y luego mas abajo en onCreateLoader lo
+         * creamos.
+         * IMPORTANTE: por lo q he visto: es importante que sea static. Al instalarla en mi movil
+         * o en mi tablet se instalaba bien pero al ejecutarla se abria y cerraba de golpe por
+         * algun error pero sin decir por que. En AIDE en la tablet vi en Logcat por que pasaba y
+         * era q tenia q ser static. Y luego mire en internet y encontre la explicacion
+         * en: http://stackoverflow.com/questions/31999869/why-cant-loaders-be-non-static-inner-class
+         * y explica de los loaders:
+         * they are specifically designed to survive rotation changes (which usually result in the
+         * activity being destroyed and recreated). As non-static inner classes contain an implicit
+         * reference to their containing instance (i.e., the inner class would have a reference to
+         * the first Activity), this is guaranteed to create a memory leak on any configuration change.
+         */
         public static class MyLoader extends AsyncTaskLoader<String[]> {
 
             /* This String array will hold and help cache our weather data */
@@ -166,7 +180,13 @@ public class MainActivity extends AppCompatActivity implements
 			
 			Context context;
 			ProgressBar loadingIndicator;
-			
+
+            /**
+             * Constructor
+             *
+             * @param ctx
+             * @param pb
+             */
 			public MyLoader(Context ctx, ProgressBar pb){
 				super(ctx);
 				context = ctx;
