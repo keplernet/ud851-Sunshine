@@ -158,7 +158,6 @@ public class MainActivity extends AppCompatActivity implements
                 .registerOnSharedPreferenceChangeListener(this);
     }
 
-    
 
         public static class MyLoader extends AsyncTaskLoader<String[]> {
 
@@ -238,6 +237,7 @@ public class MainActivity extends AppCompatActivity implements
 		return new MyLoader(this, mLoadingIndicator);
 	}
 	
+
     /**
      * Called when a previously created loader has finished its load.
      *
