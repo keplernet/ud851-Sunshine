@@ -16,6 +16,7 @@
 package com.example.android.sunshine;
 
 import android.os.Bundle;
+import android.support.v4.app.NavUtils;
 import android.support.v7.app.AppCompatActivity;
 import android.view.MenuItem;
 
@@ -57,6 +58,13 @@ public class SettingsActivity extends AppCompatActivity {
         int id = item.getItemId();
         if (id == android.R.id.home) {
             onBackPressed();
+            //ALAN: Por lo q veo, este metodo hace como si hubieramosdado al boton "Atras" del movil,
+            // en lugar de crear/llamar a la parentActivity (si estuviera especificada).
+            //ALAN: En otros ejercicios, en lugar de llamar a onBackPressed() hacia esto (pero he
+            // averiguado q esto requiere q en AndroidManifest.ml en settingsActivity pongamos
+            // su parentActivity, pero no queremos definir un parent de settings, sino q vuelva a
+            // la activity anterior, asi q no vale usar esto ahora aqui) :
+            //NavUtils.navigateUpFromSameTask(this);
         }
 
         return super.onOptionsItemSelected(item);

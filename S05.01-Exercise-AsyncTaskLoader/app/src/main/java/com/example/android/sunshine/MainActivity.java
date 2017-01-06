@@ -20,9 +20,13 @@ import android.content.Intent;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.support.v4.app.LoaderManager;
+import android.support.v4.content.AsyncTaskLoader;
+import android.support.v4.content.Loader;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.text.TextUtils;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -39,9 +43,13 @@ import com.example.android.sunshine.utilities.OpenWeatherJsonUtils;
 import java.net.URL;
 
 // TODO (1) Implement the proper LoaderCallbacks interface and the methods of that interface
-public class MainActivity extends AppCompatActivity implements ForecastAdapterOnClickHandler {
+public class MainActivity extends AppCompatActivity
+        implements ForecastAdapterOnClickHandler, LoaderManager.LoaderCallbacks<String[]> {
 
     private static final String TAG = MainActivity.class.getSimpleName();
+
+    private static final int FORECAST_LOADER_ID = 73;
+    private static final String LOCATION_EXTRA = "location";
 
     private RecyclerView mRecyclerView;
     private ForecastAdapter mForecastAdapter;
@@ -100,7 +108,14 @@ public class MainActivity extends AppCompatActivity implements ForecastAdapterOn
 
         // TODO (7) Remove the code for the AsyncTask and initialize the AsyncTaskLoader
         /* Once all of our views are setup, we can load the weather data. */
-        loadWeatherData();
+        Log.d(TAG, "onCreate : before initLoader(...)");
+        String location = SunshinePreferences.getPreferredWeatherLocation(this);
+        Bundle bundle = new Bundle();
+        bundle.putString(LOCATION_EXTRA, location);
+
+        getSupportLoaderManager().initLoader(FORECAST_LOADER_ID, bundle, this);
+//        loadWeatherData();
+        Log.d(TAG, "onCreate : after initLoader(...)");
     }
 
     /**
@@ -111,7 +126,25 @@ public class MainActivity extends AppCompatActivity implements ForecastAdapterOn
         showWeatherDataView();
 
         String location = SunshinePreferences.getPreferredWeatherLocation(this);
-        new FetchWeatherTask().execute(location);
+        Bundle bundle = new Bundle();
+        bundle.putString(LOCATION_EXTRA, location);
+
+        LoaderManager loaderManager = getSupportLoaderManager();
+        Loader<String[]> loader = loaderManager.getLoader(FORECAST_LOADER_ID);
+        if(loader == null){
+            //Nota mia: Por lo q veo, aqui nunca entra, ya que, al arrancar la app,
+            // onCreate ejecuta loaderManager.initLoader(FORECAST_LOADER_ID, null, ..), asi q al dar al
+            // boton de buscar se ejecuta este metodo pero loader ya no es null,
+            // asi q en este metodo nunca es null!!
+            Log.d(TAG, "loadWeatherData : before initLoader(...)");
+            loaderManager.initLoader(FORECAST_LOADER_ID, bundle, this);
+            Log.d(TAG, "loadWeatherData : after initLoader(...)");
+        } else {
+            Log.d(TAG, "loadWeatherData : before restartLoader(...)");
+            loaderManager.restartLoader(FORECAST_LOADER_ID, bundle, this);
+            Log.d(TAG, "loadWeatherData : after restartLoader(...)");
+        }
+//        new FetchWeatherTask().execute(location);
     }
 
     // TODO (2) Within onCreateLoader, return a new AsyncTaskLoader that looks a lot like the existing FetchWeatherTask.
@@ -162,6 +195,110 @@ public class MainActivity extends AppCompatActivity implements ForecastAdapterOn
         mErrorMessageDisplay.setVisibility(View.VISIBLE);
     }
 
+    @Override
+    public Loader<String[]> onCreateLoader(int id, final Bundle args) {
+        return new AsyncTaskLoader<String[]>(this) {
+            String[] mData;
+
+            @Override
+            protected void onStartLoading() {
+                Log.d(TAG, "onCreateLoader - AsyncTaskLoader - onStartLoading : Starting");
+                if(args == null){
+                    Log.d(TAG, "onCreateLoader - AsyncTaskLoader - onStartLoading : args == null -> returning");
+                    return;
+                }
+
+                mLoadingIndicator.setVisibility(View.VISIBLE);
+
+                if(mData == null){
+                    Log.d(TAG, "onCreateLoader - AsyncTaskLoader - onStartLoading : before forceLoad()");
+                    forceLoad();
+                    Log.d(TAG, "onCreateLoader - AsyncTaskLoader - onStartLoading : after forceLoad()");
+                } else {
+                    Log.d(TAG, "onCreateLoader - AsyncTaskLoader - onStartLoading : before deliverResult()");
+                    deliverResult(mData);
+                    Log.d(TAG, "onCreateLoader - AsyncTaskLoader - onStartLoading : after deliverResult()");
+                }
+                //TODO: En principio no hay q llamar a super.onStartLoading(), pero no se si daria igual llamarlo... Comprobarlo.
+                //super.onStartLoading();
+            }
+
+            @Override
+            public String[] loadInBackground() {
+                Log.d(TAG, "onCreateLoader - AsyncTaskLoader - loadInBackground : Starting");
+                String location = args.getString(LOCATION_EXTRA);
+                if(location == null || TextUtils.isEmpty(location)){
+                    Log.d(TAG, "onCreateLoader - AsyncTaskLoader - loadInBackground :  queryUrlString (in args) == null -> returning");
+                    return null;
+                }
+
+                URL weatherRequestUrl = NetworkUtils.buildUrl(location);
+
+                try {
+                    String jsonWeatherResponse = NetworkUtils
+                            .getResponseFromHttpUrl(weatherRequestUrl);
+
+                    String[] simpleJsonWeatherData = OpenWeatherJsonUtils
+                            .getSimpleWeatherStringsFromJson(MainActivity.this, jsonWeatherResponse);
+
+                    return simpleJsonWeatherData;
+
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    return null;
+                }
+            }
+
+            @Override
+            public void deliverResult(String[] data) {
+                Log.d(TAG, "onCreateLoader - AsyncTaskLoader - deliverResult : Starting");
+                //NOTA MIA: Esto lo hacemos para que cuando hemos buscado algo y cambiamos de app
+                // y volvemos a esta app NO vuelva a hacer peticion de los datos (sino que reutilice
+                // los datos q ya habia buscado antes),
+                // y por lo q veo, basta con que guarde cualquier cosa a modo de flag q indique
+                // q ya se ha buscado, por ejemplo basta con q aqui guardara cualquier cosa
+                // en mData, simplemente para que en onStartLoading(..) no entre en el else
+                // q ejecuta el forceLoad() q es lo q llama a loadInBackGround(..)
+                // (Si se vuelve a pinchar el boton de search eso llama a
+                // loaderManager.restartLoader(FORECAST_LOADER_ID, ..) q se encarga de resetear
+                // el loader y asi se vuelve a hacer el forceLoad() y ejecutar la peticion de datos,
+                // asi q no hay problema).
+                //
+                // De hecho, ni siquiera es necesario hacerlo en este metodo, sino que si
+                // en loadInBackGround(..) guardo el flag (o sea guardo cualquier cosa
+                // en mData, tambien valdria!!
+                // Lo dejo aqui, pq me parece mas limpio el codigo, para separar cosas,
+                // y tb por ocultar el progressBar (mLoadingIndicator)
+                mData = data;
+
+                //NOTA: Añado esto pq progressBar se quedaba visible
+                mLoadingIndicator.setVisibility(View.INVISIBLE);
+
+                super.deliverResult(data);
+            }
+        };
+    }
+
+    @Override
+    public void onLoadFinished(Loader<String[]> loader, String[] data) {
+        Log.d(TAG, "onLoadFinished :  starting");
+
+        mLoadingIndicator.setVisibility(View.INVISIBLE);
+        if (data != null) {
+            showWeatherDataView();
+            mForecastAdapter.setWeatherData(data);
+        } else {
+            showErrorMessage();
+        }
+    }
+
+    @Override
+    public void onLoaderReset(Loader<String[]> loader) {
+        Log.d(TAG, "onLoaderReset :  starting");
+        //No hay nada q hacer aqui ahora mismo (pero debe estar aqui implementado este metodo.
+    }
+
+/*
     // TODO (6) Remove any and all code from MainActivity that references FetchWeatherTask
     public class FetchWeatherTask extends AsyncTask<String, Void, String[]> {
 
@@ -174,7 +311,9 @@ public class MainActivity extends AppCompatActivity implements ForecastAdapterOn
         @Override
         protected String[] doInBackground(String... params) {
 
-            /* If there's no zip code, there's nothing to look up. */
+            */
+/* If there's no zip code, there's nothing to look up. *//*
+
             if (params.length == 0) {
                 return null;
             }
@@ -208,6 +347,7 @@ public class MainActivity extends AppCompatActivity implements ForecastAdapterOn
             }
         }
     }
+*/
 
     /**
      * This method uses the URI scheme for showing a location found on a

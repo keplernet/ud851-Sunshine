@@ -31,7 +31,12 @@
         <activity
             android:name=".MainActivity"
             android:label="@string/app_name"
-            android:launchMode="singleTop">
+            android:launchMode="singleTop"
+            >
+            <!-- Por lo q veo, launchMode="singleTop" (al menos en esta app) funciona como dicen
+            en el curso (a pesar de lo q lei en un blog sobre launchMode singleTop): evita q al
+            volver desde DetailActivity se cree otra instance de MainActivity y se ejecute su
+            onCreate() (en lugar de eso se vuelve a la misma instance y se ejecuta su onNewIntent()-->
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
                 <category android:name="android.intent.category.LAUNCHER"/>

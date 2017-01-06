@@ -55,7 +55,14 @@ public class MainActivity extends AppCompatActivity implements
     private static final int FORECAST_LOADER_ID = 0;
 
     @Override
+    protected void onNewIntent(Intent intent) {
+        Log.d(TAG, "onNewIntent - starting");
+        super.onNewIntent(intent);
+    }
+
+    @Override
     protected void onCreate(Bundle savedInstanceState) {
+        Log.d(TAG, "onCreate - starting");
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_forecast);
 
