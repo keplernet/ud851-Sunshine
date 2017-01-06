@@ -158,21 +158,21 @@ public class MainActivity extends AppCompatActivity implements
                 .registerOnSharedPreferenceChangeListener(this);
     }
 
-    /**
-     * Instantiate and return a new Loader for the given ID.
-     *
-     * @param id The ID whose loader is to be created.
-     * @param loaderArgs Any arguments supplied by the caller.
-     *
-     * @return Return a new Loader instance that is ready to start loading.
-     */
-    @Override
-    public Loader<String[]> onCreateLoader(int id, final Bundle loaderArgs) {
+    
 
-        return new AsyncTaskLoader<String[]>(this) {
+        public static class MyLoader extends AsyncTaskLoader<String[]> {
 
             /* This String array will hold and help cache our weather data */
             String[] mWeatherData = null;
+			
+			Context context;
+			ProgressBar loadingIndicator;
+			
+			public MyLoader(Context ctx, ProgressBar pb){
+				super(ctx);
+				context = ctx;
+				loadingIndicator = pb;
+			}
 
             /**
              * Subclasses of AsyncTaskLoader must implement this to take care of loading their data.
@@ -182,7 +182,7 @@ public class MainActivity extends AppCompatActivity implements
                 if (mWeatherData != null) {
                     deliverResult(mWeatherData);
                 } else {
-                    mLoadingIndicator.setVisibility(View.VISIBLE);
+                    loadingIndicator.setVisibility(View.VISIBLE);
                     forceLoad();
                 }
             }
@@ -197,14 +197,14 @@ public class MainActivity extends AppCompatActivity implements
             @Override
             public String[] loadInBackground() {
 
-                URL weatherRequestUrl = NetworkUtils.getUrl(MainActivity.this);
+                URL weatherRequestUrl = NetworkUtils.getUrl(context);
 
                 try {
                     String jsonWeatherResponse = NetworkUtils
                             .getResponseFromHttpUrl(weatherRequestUrl);
 
                     String[] simpleJsonWeatherData = OpenWeatherJsonUtils
-                            .getSimpleWeatherStringsFromJson(MainActivity.this, jsonWeatherResponse);
+                            .getSimpleWeatherStringsFromJson(context, jsonWeatherResponse);
 
                     return simpleJsonWeatherData;
                 } catch (Exception e) {
@@ -222,9 +222,22 @@ public class MainActivity extends AppCompatActivity implements
                 mWeatherData = data;
                 super.deliverResult(data);
             }
-        };
-    }
-
+        }
+    
+	
+	/**
+     * Instantiate and return a new Loader for the given ID.
+     *
+     * @param id The ID whose loader is to be created.
+     * @param loaderArgs Any arguments supplied by the caller.
+     *
+     * @return Return a new Loader instance that is ready to start loading.
+     */
+    @Override
+    public Loader<String[]> onCreateLoader(int id, final Bundle loaderArgs) {
+		return new MyLoader(this, mLoadingIndicator);
+	}
+	
     /**
      * Called when a previously created loader has finished its load.
      *

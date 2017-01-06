@@ -200,6 +200,22 @@ public class MainActivity extends AppCompatActivity implements ForecastAdapterOn
             }
         }
     }
+	
+	/*
+	* Alan. mi metodo para mostrar el mapa
+	*/
+	private void openLocationInMap(){
+		String location = SunshinePreferences.getPreferredWeatherLocation(this);
+		Uri uri = new Uri.Builder()
+					.scheme("geo")
+					.authority("0,0")
+					.appendQueryParameter("q",location).build();
+		Intent i = new Intent(Intent.ACTION_VIEW, uri);
+		if(i.resolveActivity(getPackageManager()) != null){
+			startActivity(i);
+		}
+					
+	}
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -222,6 +238,10 @@ public class MainActivity extends AppCompatActivity implements ForecastAdapterOn
         }
 
         // TODO (2) Launch the map when the map menu item is clicked
+		else if(id == R.id.action_show_map){
+			openLocationInMap();
+			return true;
+		}
 
         return super.onOptionsItemSelected(item);
     }
