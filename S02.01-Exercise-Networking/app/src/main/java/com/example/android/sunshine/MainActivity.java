@@ -19,6 +19,8 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.widget.TextView;
+import android.os.*;
+import java.net.*;
 
 import com.example.android.sunshine.data.SunshinePreferences;
 import com.example.android.sunshine.utilities.NetworkUtils;
@@ -68,7 +70,6 @@ public class MainActivity extends AppCompatActivity {
                 "Mon, May 30 - Post Apocalypse - 15°C / 10°C",
         };
 */
-
         // TOD (3) Delete the for loop that populates the TextView with dummy data
         /*
          * Iterate through the array and append the Strings to the TextView. The reason why we add
@@ -126,3 +127,4 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 }
+

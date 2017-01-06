@@ -23,6 +23,8 @@ import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Scanner;
+import android.net.*;
+import java.net.*;
 
 /**
  * These utilities will be used to communicate with the weather servers.
