@@ -23,6 +23,7 @@ import android.support.v7.preference.ListPreference;
 import android.support.v7.preference.Preference;
 import android.support.v7.preference.PreferenceFragmentCompat;
 import android.support.v7.preference.PreferenceScreen;
+import android.util.Log;
 
 import com.example.android.sunshine.data.SunshinePreferences;
 import com.example.android.sunshine.data.WeatherContract;
@@ -38,6 +39,8 @@ import com.example.android.sunshine.data.WeatherContract;
  */
 public class SettingsFragment extends PreferenceFragmentCompat implements
         SharedPreferences.OnSharedPreferenceChangeListener {
+
+    private static final String TAG = SettingsFragment.class.getSimpleName();
 
     private void setPreferenceSummary(Preference preference, Object value) {
         String stringValue = value.toString();
@@ -92,6 +95,7 @@ public class SettingsFragment extends PreferenceFragmentCompat implements
     @Override
     public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
         Activity activity = getActivity();
+        Log.d(TAG, "activity = " + activity);
 
         if (key.equals(getString(R.string.pref_location_key))) {
             // we've changed the location

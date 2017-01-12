@@ -33,6 +33,8 @@ import com.example.android.sunshine.utilities.SunshineWeatherUtils;
  */
 class ForecastAdapter extends RecyclerView.Adapter<ForecastAdapter.ForecastAdapterViewHolder> {
 
+    private static final String TAG = ForecastAdapter.class.getSimpleName();
+
     /* The context we use to utility methods, app resources and layout inflaters */
     private final Context mContext;
 

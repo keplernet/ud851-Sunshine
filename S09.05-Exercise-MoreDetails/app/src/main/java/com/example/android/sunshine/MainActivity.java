@@ -262,16 +262,25 @@ public class MainActivity extends AppCompatActivity implements
     /**
      * This method is for responding to clicks from our list.
      *
-     * @param weatherForDay String describing weather details for a particular day
+     * @param date for describing weather details
      */
     @Override
-    public void onClick(String weatherForDay) {
+    public void onClick(long date) {
 //      TODO (39) Refactor onClick to build a URI for the clicked date and and pass it with the Intent using setData
         Context context = this;
         Class destinationClass = DetailActivity.class;
         Intent intentToStartDetailActivity = new Intent(context, destinationClass);
-        intentToStartDetailActivity.putExtra(Intent.EXTRA_TEXT, weatherForDay);
+
+        intentToStartDetailActivity.setData(WeatherContract.WeatherEntry.CONTENT_URI.buildUpon().appendPath("" + date).build());
         startActivity(intentToStartDetailActivity);
+//        ------------ Lo de aqui arriba es lo q yo habia hecho. Lo de aqui abajo es lo q estaba en
+//                      lo q pusieron en la solucion (en este caso, son equivalentes, hacen lo mismo):
+
+//        Intent weatherDetailIntent = new Intent(MainActivity.this, DetailActivity.class);
+//        Uri uriForDateClicked = WeatherContract.WeatherEntry.buildWeatherUriWithDate(date);
+//        weatherDetailIntent.setData(uriForDateClicked);
+//        startActivity(weatherDetailIntent);
+
     }
 
     /**
