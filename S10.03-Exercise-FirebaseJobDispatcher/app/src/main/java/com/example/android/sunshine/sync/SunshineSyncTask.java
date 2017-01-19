@@ -18,6 +18,7 @@ package com.example.android.sunshine.sync;
 import android.content.ContentResolver;
 import android.content.ContentValues;
 import android.content.Context;
+import android.util.Log;
 
 import com.example.android.sunshine.data.WeatherContract;
 import com.example.android.sunshine.utilities.NetworkUtils;
@@ -27,6 +28,7 @@ import java.net.URL;
 
 public class SunshineSyncTask {
 
+    private static final String TAG = SunshineSyncTask.class.getSimpleName();
 
     /**
      * Performs the network request for updated weather, parses the JSON from that request, and
@@ -37,7 +39,7 @@ public class SunshineSyncTask {
      * @param context Used to access utility methods and the ContentResolver
      */
     synchronized public static void syncWeather(Context context) {
-
+        Log.d(TAG, "syncWeather");
 
         try {
             /*

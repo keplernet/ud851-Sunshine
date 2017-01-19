@@ -18,10 +18,17 @@ package com.example.android.sunshine.sync;
 import android.content.ContentResolver;
 import android.content.ContentValues;
 import android.content.Context;
+import android.content.SharedPreferences;
+import android.support.v7.preference.PreferenceManager;
+import android.text.format.DateUtils;
 
+import com.example.android.sunshine.R;
+import com.example.android.sunshine.data.SunshinePreferences;
 import com.example.android.sunshine.data.WeatherContract;
 import com.example.android.sunshine.utilities.NetworkUtils;
+import com.example.android.sunshine.utilities.NotificationUtils;
 import com.example.android.sunshine.utilities.OpenWeatherJsonUtils;
+import com.example.android.sunshine.utilities.SunshineDateUtils;
 
 import java.net.URL;
 
@@ -74,10 +81,31 @@ public class SunshineSyncTask {
                         weatherValues);
 
 //              TODO (13) Check if notifications are enabled
+//                Boolean isNotificationsEnabled = SunshinePreferences.areNotificationsEnabled(context);
+                SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(context);
+                Boolean isNotificationsEnabled =
+                        sp.getBoolean(
+                                context.getString(R.string.pref_enable_notifications_key),
+                                context.getResources().getBoolean(R.bool.show_notifications_by_default));
 
 //              TODO (14) Check if a day has passed since the last notification
+                long elapsedTimeSinceLastNotification = SunshinePreferences.getEllapsedTimeSinceLastNotification(context);
+                boolean moreThanADaySinceLastNotification = false;
+                if(elapsedTimeSinceLastNotification > DateUtils.DAY_IN_MILLIS) {
+                    moreThanADaySinceLastNotification = true;
+                }
+
+//                long lastNotificationTime =
+//                        sp.getLong(context.getString(R.string.pref_last_notification), 0);
+//                boolean moreThanADaySinceLastNotification = false;
+//                if(System.currentTimeMillis() - lastNotificationTime > SunshineDateUtils.DAY_IN_MILLIS) {
+//                    moreThanADaySinceLastNotification = true;
+//                }
 
 //              TODO (15) If more than a day have passed and notifications are enabled, notify the user
+                if(isNotificationsEnabled && moreThanADaySinceLastNotification){
+                    NotificationUtils.notifyUserOfNewWeather(context);
+                }
 
             /* If the code reaches this point, we have successfully performed our sync */
 
