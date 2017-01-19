@@ -105,7 +105,10 @@ public final class NetworkUtils {
             return buildUrlWithLatitudeLongitude(latitude, longitude);
         } else {
             String locationQuery = SunshinePreferences.getPreferredWeatherLocation(context);
-            return buildUrlWithLocationQuery(locationQuery);
+            Log.d(TAG,"locationQuery = " + locationQuery);
+            URL url = buildUrlWithLocationQuery(locationQuery);
+            Log.d(TAG, "buildUrlWithLocationQuery(..) returns -> " + url);
+            return url;
         }
     }
 

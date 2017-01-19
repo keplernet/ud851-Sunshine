@@ -18,6 +18,7 @@ package com.example.android.sunshine.sync;
 import android.content.ContentResolver;
 import android.content.ContentValues;
 import android.content.Context;
+import android.util.Log;
 
 import com.example.android.sunshine.data.WeatherContract;
 import com.example.android.sunshine.utilities.NetworkUtils;
@@ -27,6 +28,7 @@ import java.net.URL;
 
 public class SunshineSyncTask {
 
+    private static final String TAG = SunshineSyncTask.class.getSimpleName();
 
     /**
      * Performs the network request for updated weather, parses the JSON from that request, and
@@ -37,6 +39,7 @@ public class SunshineSyncTask {
      * @param context Used to access utility methods and the ContentResolver
      */
     synchronized public static void syncWeather(Context context) {
+        Log.d(TAG, "syncWeather");
 
 
         try {
@@ -46,6 +49,7 @@ public class SunshineSyncTask {
              * longitude or off of a simple location as a String.
              */
             URL weatherRequestUrl = NetworkUtils.getUrl(context);
+            Log.d(TAG, "syncWeather - weatherRequestUrl = " + weatherRequestUrl);
 
             /* Use the URL to retrieve the JSON */
             String jsonWeatherResponse = NetworkUtils.getResponseFromHttpUrl(weatherRequestUrl);
@@ -61,6 +65,7 @@ public class SunshineSyncTask {
              * there isn't any to insert.
              */
             if (weatherValues != null && weatherValues.length != 0) {
+                Log.d(TAG, "syncWeather - weatherValues (=ContentValues) have content to insert");
                 /* Get a handle on the ContentResolver to delete and insert data */
                 ContentResolver sunshineContentResolver = context.getContentResolver();
 

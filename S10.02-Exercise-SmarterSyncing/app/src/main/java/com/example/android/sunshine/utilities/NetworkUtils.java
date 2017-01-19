@@ -54,7 +54,8 @@ public final class NetworkUtils {
     private static final String STATIC_WEATHER_URL =
             "https://andfun-weather.udacity.com/staticweather";
 
-    private static final String FORECAST_BASE_URL = STATIC_WEATHER_URL;
+//    private static final String FORECAST_BASE_URL = STATIC_WEATHER_URL;
+    private static final String FORECAST_BASE_URL = DYNAMIC_WEATHER_URL;
 
     /*
      * NOTE: These values only effect responses from OpenWeatherMap, NOT from the fake weather
@@ -98,14 +99,19 @@ public final class NetworkUtils {
      * @return URL to query weather service
      */
     public static URL getUrl(Context context) {
+        Log.d(TAG,"getUrl");
         if (SunshinePreferences.isLocationLatLonAvailable(context)) {
+            Log.d(TAG,"getUrl - isLocationLatLonAvailable = true");
             double[] preferredCoordinates = SunshinePreferences.getLocationCoordinates(context);
             double latitude = preferredCoordinates[0];
             double longitude = preferredCoordinates[1];
             return buildUrlWithLatitudeLongitude(latitude, longitude);
         } else {
             String locationQuery = SunshinePreferences.getPreferredWeatherLocation(context);
-            return buildUrlWithLocationQuery(locationQuery);
+            Log.d(TAG,"getUrl - locationQuery = " + locationQuery);
+            URL url = buildUrlWithLocationQuery(locationQuery);
+            Log.d(TAG, "getUrl - buildUrlWithLocationQuery(..) returns -> " + url);
+            return url;
         }
     }
 
